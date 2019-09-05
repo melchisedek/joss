@@ -1,3 +1,11 @@
+fork of https://github.com/javaswift/joss
+
+## Changes
+### TODO
+* extends CommandException with HeaderFields
+### FINISH
+
+
 Java OpenStack Storage (JOSS) [![Build Status](https://buildhive.cloudbees.com/job/javaswift/job/joss/badge/icon)](https://buildhive.cloudbees.com/job/javaswift/job/joss/)
 =============================
 JOSS is a Java client for the [OpenStack Storage component](https://docs.openstack.org/swift/latest/admin/objectstorage-intro.html) REST interface. In order to use it you must have an account with an OpenStack Storage provider, such as the [CloudVPS Object Store](https://www.cloudvps.nl/blog/cloudvps-object-store-beta-test-join-and-get-free-storage/).
