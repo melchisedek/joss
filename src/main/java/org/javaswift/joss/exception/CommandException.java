@@ -1,8 +1,12 @@
 package org.javaswift.joss.exception;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CommandException extends RuntimeException {
 
     private int httpStatusCode;
+    private Map<String,String> httpHeaders = new HashMap<String,String>();
     private CommandExceptionError error;
 
     public CommandException(Integer httpStatusCode, CommandExceptionError error) {
@@ -22,6 +26,14 @@ public class CommandException extends RuntimeException {
         return this.httpStatusCode;
     }
 
+   public void addHttpHeaderField(String name, String value) {
+      this.httpHeaders.put(name, value);
+   }
+
+   public Map<String,String> getHttpHeaders() {
+      return httpHeaders;
+   }
+   
     public CommandExceptionError getError() {
         return this.error;
     }

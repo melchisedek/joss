@@ -51,6 +51,13 @@ public abstract class AbstractCommand<M extends HttpRequestBase, N> implements C
             HttpStatusChecker.verifyCode(getStatusCheckers(), response.getStatusLine().getStatusCode());
             return getReturnObject(response);
         } catch (CommandException err) {
+           
+           // add additional hader informations
+           org.apache.http.Header[] allHeaders = response.getAllHeaders();
+           for(org.apache.http.Header header : allHeaders) {
+              err.addHttpHeaderField(header.getName(), header.getValue());
+           }
+           
         	request.releaseConnection();
             if (allowErrorLog) { // This is disabled, for example, for exists(), where we want to ignore the exception
                 logError(request, err);
