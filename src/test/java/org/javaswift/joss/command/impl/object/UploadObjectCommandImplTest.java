@@ -8,18 +8,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import mockit.Expectations;
-import mockit.NonStrictExpectations;
-import mockit.Verifications;
-
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.cookie.DateParseException;
-import org.apache.http.params.CoreProtocolPNames;
 import org.javaswift.joss.command.impl.core.BaseCommandTest;
 import org.javaswift.joss.exception.CommandException;
 import org.javaswift.joss.exception.Md5ChecksumException;
 import org.javaswift.joss.exception.MissingContentLengthOrTypeException;
 import org.javaswift.joss.exception.NotFoundException;
+import org.javaswift.joss.headers.GeneralHeader;
 import org.javaswift.joss.headers.Token;
 import org.javaswift.joss.headers.object.DeleteAfter;
 import org.javaswift.joss.headers.object.DeleteAt;
@@ -27,8 +21,17 @@ import org.javaswift.joss.headers.object.Etag;
 import org.javaswift.joss.headers.object.ObjectContentType;
 import org.javaswift.joss.headers.object.ObjectManifest;
 import org.javaswift.joss.instructions.UploadInstructions;
+
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.cookie.DateParseException;
+import org.apache.http.params.CoreProtocolPNames;
+
 import org.junit.Before;
 import org.junit.Test;
+
+import mockit.Expectations;
+import mockit.NonStrictExpectations;
+import mockit.Verifications;
 
 public class UploadObjectCommandImplTest extends BaseCommandTest {
 
@@ -92,17 +95,21 @@ public class UploadObjectCommandImplTest extends BaseCommandTest {
         expectStatusCode(201);
         InputStream inputStream = new ByteArrayInputStream(new byte[]{ 0x01, 0x02, 0x03 });
         new UploadObjectCommandImpl(this.account, httpClient, defaultAccess, getObject("objectname"),
-                                new UploadInstructions(inputStream).setMd5("ebabefac")
+                                new UploadInstructions(inputStream)
+                                        .addHeader( new GeneralHeader("X-Newest", "true") )
+                                        .setMd5("ebabefac")
                                         .setContentType("image/bmp")
                                         .setDeleteAt(new DeleteAt("Sat, 22 Sep 2012 07:24:21 GMT"))
                                         .setDeleteAfter(new DeleteAfter(42))
                                         .setObjectManifest(new ObjectManifest(getObject("some-big-file.dat").getPath().replaceFirst("/","")))).call();
+        verifyHeaderValue("true", "X-Newest");
         verifyHeaderValue("image/bmp", ObjectContentType.CONTENT_TYPE);
         verifyHeaderValue("cafebabe", Token.X_AUTH_TOKEN);
         verifyHeaderValue("ebabefac", Etag.ETAG);
         verifyHeaderValue("1348298661", DeleteAt.X_DELETE_AT);
         verifyHeaderValue("42", DeleteAfter.X_DELETE_AFTER);
         verifyHeaderValue("container/some-big-file.dat", ObjectManifest.X_OBJECT_MANIFEST);
+
         inputStream.close();
     }
 
