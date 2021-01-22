@@ -1,19 +1,33 @@
 package org.javaswift.joss.swift;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+
+import javax.activation.MimetypesFileTypeMap;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.javaswift.joss.headers.Header;
-import org.javaswift.joss.headers.object.*;
+import org.javaswift.joss.headers.object.DeleteAt;
+import org.javaswift.joss.headers.object.Etag;
+import org.javaswift.joss.headers.object.ObjectContentLength;
+import org.javaswift.joss.headers.object.ObjectContentType;
+import org.javaswift.joss.headers.object.ObjectLastModified;
+import org.javaswift.joss.headers.object.ObjectManifest;
 import org.javaswift.joss.information.ObjectInformation;
 import org.javaswift.joss.instructions.DownloadInstructions;
 import org.javaswift.joss.instructions.UploadInstructions;
-import org.javaswift.joss.model.*;
+import org.javaswift.joss.model.Container;
+import org.javaswift.joss.model.Directory;
+import org.javaswift.joss.model.DirectoryOrObject;
+import org.javaswift.joss.model.ListSubject;
+import org.javaswift.joss.model.StoredObject;
 import org.javaswift.joss.util.LocalTime;
-
-import javax.activation.MimetypesFileTypeMap;
-import java.io.IOException;
-import java.util.*;
 
 public class SwiftStoredObject implements ListSubject, DirectoryOrObject {
 
@@ -85,6 +99,9 @@ public class SwiftStoredObject implements ListSubject, DirectoryOrObject {
                     uploadInstructions.getContentType() != null ?
                         uploadInstructions.getContentType() :
                         new ObjectContentType(new MimetypesFileTypeMap().getContentType(getName()));
+            this.deleteAt = uploadInstructions.getDeleteAt() != null ? uploadInstructions.getDeleteAt() :
+                    uploadInstructions.getDeleteAfter() != null ?
+                            new DeleteAt(System.currentTimeMillis() + (1000 * uploadInstructions.getDeleteAfter().getExpireAfterSeconds())) : null;
             return new SwiftResult<Object>(HttpStatus.SC_CREATED);
         } catch (IOException err) {
             return new SwiftResult<Object>(HttpStatus.SC_UNPROCESSABLE_ENTITY);
@@ -164,6 +181,7 @@ public class SwiftStoredObject implements ListSubject, DirectoryOrObject {
         targetObject.setEtag(getEtag().getHeaderValue());
         targetObject.setLastModified(getLastModified());
         targetObject.metadataSetFromHeaders();
+        targetObject.setDeleteAt(deleteAt.getDate());
         return targetObject;
     }
 
