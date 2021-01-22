@@ -8,10 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
@@ -20,6 +16,12 @@ import org.javaswift.joss.command.impl.core.httpstatus.HttpStatusChecker;
 import org.javaswift.joss.exception.CommandException;
 import org.javaswift.joss.headers.Header;
 import org.javaswift.joss.instructions.QueryParameters;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.util.EntityUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +53,13 @@ public abstract class AbstractCommand<M extends HttpRequestBase, N> implements C
             HttpStatusChecker.verifyCode(getStatusCheckers(), response.getStatusLine().getStatusCode());
             return getReturnObject(response);
         } catch (CommandException err) {
-           
-           // add additional hader informations
+         // add additional hader informations
+         if(response != null){
            org.apache.http.Header[] allHeaders = response.getAllHeaders();
            for(org.apache.http.Header header : allHeaders) {
               err.addHttpHeaderField(header.getName(), header.getValue());
            }
-           
+         }
         	request.releaseConnection();
             if (allowErrorLog) { // This is disabled, for example, for exists(), where we want to ignore the exception
                 logError(request, err);
