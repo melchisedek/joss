@@ -9,9 +9,6 @@ import java.util.TreeSet;
 
 import javax.activation.MimetypesFileTypeMap;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
 import org.javaswift.joss.headers.Header;
 import org.javaswift.joss.headers.object.DeleteAt;
 import org.javaswift.joss.headers.object.Etag;
@@ -28,6 +25,10 @@ import org.javaswift.joss.model.DirectoryOrObject;
 import org.javaswift.joss.model.ListSubject;
 import org.javaswift.joss.model.StoredObject;
 import org.javaswift.joss.util.LocalTime;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
 
 public class SwiftStoredObject implements ListSubject, DirectoryOrObject {
 
@@ -181,7 +182,9 @@ public class SwiftStoredObject implements ListSubject, DirectoryOrObject {
         targetObject.setEtag(getEtag().getHeaderValue());
         targetObject.setLastModified(getLastModified());
         targetObject.metadataSetFromHeaders();
-        targetObject.setDeleteAt(deleteAt.getDate());
+        if(deleteAt != null){
+            targetObject.setDeleteAt(deleteAt.getDate());
+        }
         return targetObject;
     }
 
